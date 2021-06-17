@@ -1,0 +1,729 @@
+---
+title: "DivvyTripdata"
+author: "Jacques Bikoundou"
+date: "6/9/2021"
+output:
+  html_document: default
+  pdf_document: default
+editor_options: 
+  markdown: 
+    wrap: 72
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax
+for authoring HTML, PDF, and MS Word documents. For more details on
+using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that
+includes both content as well as the output of any embedded R code
+chunks within the document. You can embed an R code chunk like this:
+
+## Introduction
+
+### In this case study, I examined a 12-month period dataset to evaluate differences in ridership among Cyclistic's clients. Guided by the data analysis steps (Ask, Prepare, Process, Analyze, Share, and Act), I was able to develop an action plan based on findings from the data.
+
+## Problem
+
+### The Cyclistic management team has determined the company's future growth depends on casual riders converting into annual members. I was therefore tasked to find how the ridership habits of casual and annual members differ. The key stakeholders of the project are: Ms. Lily Moreno, my manager and director of marketing, the Cyclistic marketing analytics team, and the Cyclistic executive team.
+
+Ask. An initial meeting with the key stakeholders allowed me to ask
+questions, define the problem, use structured thinking, and communicate
+with others. The business task was clearly stated: How do annual members
+and casual riders use Cyclistic's bikes differently?.
+
+Prepare. To answer the business task, I was able to use Cyclistic's
+historical trip data of the past 12 months (May 2020 - April 2021). Data
+was made available by the Motivate International Inc. under license. As
+an internal data, I collected, weighted it through the ROCCC process,
+and secured it. Each of the 12 months data was organized in a table of
+13 columns each and thousand of rows. However, the data was found to be
+messy.
+
+Process. To begin processing the large dataset, I thought about using a
+number of tools such as Spreadsheets, SQL, and R, but in the end I opted
+to process it with RMarkdown. As an IDE, RMarkdown allows me to write
+reproducible and dynamic reports with R.
+
+### Installing the necessary packages
+
+```{r}
+install.packages('knitr', dependencies = TRUE)
+install.packages("tidyverse")
+install.packages("modeest")
+install.packages("janitor")
+```
+
+### Loading the libraries
+
+```{r}
+library(tidyverse)
+library(dplyr)
+library(lubridate)
+library(ggplot2)
+library(modeest)
+library(janitor)
+library(readr)
+```
+
+## Loading each month's dataset (May 2020 thru April 2021) and checking the structure
+
+```{r}
+may20 <- read.csv("C:/Users/panca/Downloads/202005-divvy-tripdata/202005-divvy-tripdata.csv")
+str(may20)
+```
+
+
+```{r}
+jun20 <- read.csv("C:/Users/panca/Downloads/202006-divvy-tripdata/202006-divvy-tripdata.csv")
+str(jun20)
+```
+
+
+
+```{r}
+jul20 <- read.csv("C:/Users/panca/Downloads/202007-divvy-tripdata/202007-divvy-tripdata.csv")
+str(jul20)
+```
+
+
+
+```{r}
+aug20 <- read.csv("C:/Users/panca/Downloads/202008-divvy-tripdata/202008-divvy-tripdata.csv")
+str(aug20)
+```
+
+
+
+```{r}
+sep20 <- read.csv("C:/Users/panca/Downloads/202009-divvy-tripdata/202009-divvy-tripdata.csv")
+str(sep20)
+```
+
+
+
+```{r}
+oct20 <- read.csv("C:/Users/panca/Downloads/202010-divvy-tripdata/202010-divvy-tripdata.csv")
+str(oct20)
+```
+
+
+
+```{r}
+nov20 <- read.csv("C:/Users/panca/Downloads/202011-divvy-tripdata/202011-divvy-tripdata.csv")
+str(nov20)
+```
+
+
+
+```{r}
+dec20 <- read.csv("C:/Users/panca/Downloads/202012-divvy-tripdata/202012-divvy-tripdata.csv")
+str(dec20)
+```
+
+
+
+```{r}
+jan21 <- read.csv("C:/Users/panca/Downloads/202101-divvy-tripdata/202101-divvy-tripdata.csv")
+str(jan21)
+```
+
+
+
+```{r}
+feb21 <- read.csv("C:/Users/panca/Downloads/202102-divvy-tripdata/202102-divvy-tripdata.csv")
+str(feb21)
+```
+
+
+
+```{r}
+mar21 <- read.csv("C:/Users/panca/Downloads/202103-divvy-tripdata/202103-divvy-tripdata.csv")
+str(mar21)
+```
+
+
+
+```{r}
+apr21 <- read.csv("C:/Users/panca/Downloads/202104-divvy-tripdata/202104-divvy-tripdata.csv")
+str(apr21)
+```
+
+
+
+### An observation of the structures show Some variables within the columns 'start_station_id' and 'end_station_id' appearing as 'integer' and 'character'. Because the most recent months variables appear as characters, I will be converting the integers from selected months into characters. 
+
+
+### Aligning the variables in column 'start_station_id' as character for consistency
+
+```{r}
+may20 <- mutate(may20, start_station_id=as.character(start_station_id))
+
+jun20 <- mutate(jun20, start_station_id=as.character(start_station_id))
+
+jul20 <- mutate(jul20, start_station_id=as.character(start_station_id))
+
+aug20 <- mutate(aug20, start_station_id=as.character(start_station_id))
+
+sep20 <- mutate(sep20, start_station_id=as.character(start_station_id))
+
+oct20 <- mutate(oct20, start_station_id=as.character(start_station_id))
+
+nov20 <- mutate(nov20, start_station_id=as.character(start_station_id))
+```
+
+
+### Aligning variables in the column 'end_station_id' as character for consistency
+
+```{r}
+may20 <- mutate(may20, end_station_id=as.character(end_station_id))
+
+jun20 <- mutate(jun20, end_station_id=as.character(end_station_id))
+
+jul20 <- mutate(jul20, end_station_id=as.character(end_station_id))
+
+aug20 <- mutate(aug20, end_station_id=as.character(end_station_id))
+
+sep20 <- mutate(sep20, end_station_id=as.character(end_station_id))
+
+oct20 <- mutate(oct20, end_station_id=as.character(end_station_id))
+
+nov20 <- mutate(nov20, end_station_id=as.character(end_station_id))
+```
+
+
+
+### Combining the 12 data sets into a single dataframe called 'trips_raw'
+
+```{r}
+trips_raw <- bind_rows(may20, jun20, jul20, aug20, sep20, oct20, nov20, dec20, jan21, feb21, mar21, apr21)
+```
+
+
+### Renaming the columns
+
+```{r}
+trips_raw <- rename(trips_raw,
+                    ride_event=ride_id,
+                    bike_class=rideable_type,
+                    start_time=started_at,
+                    end_time=ended_at,
+                    origin_station=start_station_name,
+                    origin_station_id=start_station_id,
+                    destination_station=end_station_name,
+                    destination_station_id=end_station_id,
+                    starting_lat=start_lat,
+                    starting_lon=start_lng,
+                    ending_lat=end_lat,
+                    ending_lon=end_lng,
+                    rider_status=member_casual)
+```
+
+
+
+### Verifying the dataframe with the new column names
+
+```{r}
+head(trips_raw)
+tail(trips_raw)
+```
+
+
+### Checking the structure of the new dataset
+
+```{r}
+str(trips_raw)
+```
+
+
+### Checking for duplicates
+
+```{r}
+duplicated(trips_raw)
+```
+
+
+### There's no sign of duplicates. Now checking for total missing values
+
+```{r}
+sum(is.na(trips_raw))
+```
+
+
+### The dataset shows 191400 missing values. Checking specific columns to locate missing values
+
+```{r}
+sum(is.na(trips_raw$destination_station_id))
+sum(is.na(trips_raw$origin_station_id))
+sum(is.na(trips_raw$ending_lat))
+sum(is.na(trips_raw$ending_lon))
+```
+
+### It turns out the missing values are concentrated in 4 columns, which are candidates for removal as they are useless and could distort results later on. Our new dataset without missing values will now become 'trips_prime'.
+
+```{r}
+trips_prime <- trips_raw %>%
+   select(-c(destination_station_id, origin_station_id, ending_lat, ending_lon))
+```
+
+
+### Checking our new dataset
+
+```{r}
+glimpse(trips_prime)
+```
+
+### Looking good! We're left with 9 columns and 3,742,202 rows
+
+### The columns 'start_time' and 'end_time' must be converted from character into datetime format for better calculations later.
+
+```{r}
+trips_prime %>%
+   mutate(trips_prime, start_time=as.POSIXct(start_time, tz='UTC'))
+```
+
+```{r}
+trips_prime %>%
+   mutate(trips_prime, end_time=as.POSIXct(end_time, tz='UTC'))
+```
+
+
+### Comparing the columns
+
+```{r}
+compare_df_cols(trips_prime)
+```
+
+
+### Checking that the column 'rider_status' and 'bike-class' only contains the corresponding values
+
+```{r}
+table(trips_prime$rider_status)
+table(trips_prime$bike_class)
+```
+### The columns look good!
+
+### Creating a date column
+
+```{r}
+trips_prime$date <- as.Date(trips_prime$start_time)
+```
+
+
+### Creating a 'Day' column
+
+```{r}
+trips_prime$day <- format(as.Date(trips_prime$date), "%d")
+```
+
+
+### Creating a column for 'day_of_week'
+
+```{r}
+trips_prime$day_of_week <- format(as.Date(trips_prime$date), '%A')
+```
+
+
+### Creating a 'Month' column
+
+```{r}
+trips_prime$month <- format(as.Date(trips_prime$date), '%B')
+```
+
+
+### Ordering the months
+
+```{r}
+trips_prime$month <- ordered(trips_prime$month, levels = c("May", "June", "July", "August", "September", "October", "November", "December", "January", "February", "March", "April"))
+```
+
+
+### Creating a 'Year' column
+
+```{r}
+trips_prime$year <- format(as.Date(trips_prime$date), "%Y")
+```
+
+
+### Converting the time to correct POSIXct format
+
+```{r}
+trips_prime$time <- format(trips_prime$start_time, format = "%H:%M:%S")
+trips_prime$time <- as.POSIXct(trips_prime$time, format = "%H:%M:%S")
+```
+
+
+### Adding a 'ride_length' column
+
+```{r}
+trips_prime$ride_length <- difftime(trips_prime$end_time,trips_prime$start_time, units = "mins")
+```
+
+
+### Checking the structure of the data frame
+
+```{r}
+str(trips_prime)
+```
+
+
+### Converting 'ride_length' from factor to numeric for easier calculations
+
+```{r}
+is.numeric(trips_prime$ride_length)
+```
+
+
+```{r}
+trips_prime$ride_length <- as.numeric(as.character(trips_prime$ride_length))
+```
+
+
+```{r}
+is.numeric(trips_prime$ride_length)
+```
+
+
+### Checking whether some rides have negative figures due to bike removal for maintenance
+
+```{r}
+trips_prime$ride_length<0
+```
+
+
+### The data shows some negative ride length. A new data frame 'trips_clean' is now created by excluding the negative rides through the use of the OR "\|" operator. The new data frame 'trips_clean' is the final.
+
+```{r}
+trips_clean <- trips_prime[!(trips_prime$origin_station == "HQ QR" | trips_prime$ride_length<0),]
+```
+
+### Analyze. At this stage the new data is secured in a new table (trips_clean) and ready for analysis. Data is sorted and filtered with calculations, patterns and relationships are identified, predictions and recommendations through data-driven decisions are made.
+
+## Structure of the new dataframe
+
+```{r}
+str(trips_clean)
+```
+
+### Our new final dataframe now has 16 columns and 3,731,696 rows
+
+### Summary of 'ride_length' column
+
+```{r}
+summary(trips_clean$ride_length)
+```
+
+### Mean of ride_length (in minutes) as shown in the summary
+
+```{r}
+mean(trips_clean$ride_length)
+```
+
+### Maximum ride length or longest ride
+
+```{r}
+max(trips_clean$ride_length)
+```
+
+### minimum of ride length
+
+```{r}
+min(trips_clean$ride_length)
+```
+
+### Median of ride length in minutes
+
+```{r}
+median(trips_clean$ride_length)
+```
+
+### Other observations on the types of bike and number of riders
+
+```{r}
+table(trips_clean$bike_class)
+table(trips_clean$rider_status)
+```
+
+### Determining the total rides for each day of the week
+
+```{r}
+table(trips_clean$day_of_week)
+```
+### The results show Saturday being the peak ride day of the week. The mode function below will confirm this finding.
+
+
+### Calculating the mode of 'day_of_week' using the modeest function
+
+```{r}
+aggregate(trips_clean$day_of_week ~ trips_clean$rider_status, FUN = mfv)
+```
+
+### Determining mean, median, and max of ride length by riders
+
+```{r}
+aggregate(trips_clean$ride_length ~ trips_clean$rider_status, FUN = mean)
+```
+
+### Data shows casual riders' average ride length to be be more than double that of annual members.
+
+
+```{r}
+aggregate(trips_clean$ride_length ~ trips_clean$rider_status, FUN = median)
+```
+
+### The median of ride length is higher among casual riders
+
+
+```{r}
+aggregate(trips_clean$ride_length ~ trips_clean$rider_status, FUN = max)
+```
+### Casual riders rode the most minutes compared to member riders.
+
+
+
+
+### Ensuring days of the week are in order by using the ordered() function.
+
+```{r}
+trips_clean$day_of_week <- ordered(trips_clean$day_of_week, levels=c("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"))
+```
+
+
+### Average daily ridership time by users
+
+```{r}
+aggregate(trips_clean$ride_length ~ trips_clean$rider_status+trips_clean$day_of_week, FUN = mean)
+```
+
+### Finding the total number of rides per users by day of week
+
+```{r}
+trips_clean %>%
+   group_by(rider_status, day_of_week) %>%
+   summarise(ride_event = n(), .groups = 'drop') %>%
+   arrange(rider_status, desc(ride_event))
+```
+
+### Exploring riders' favorite bike_class
+
+```{r}
+trips_clean %>%
+   group_by(rider_status, bike_class) %>%
+   summarise(ride_event = n(), .groups = 'drop') %>%
+   arrange(rider_status, desc(ride_event))
+```
+
+### Exploring the monthly riderships
+
+```{r}
+trips_clean %>%
+   group_by(rider_status, month) %>%
+   summarise(ride_event = n(), .groups = 'drop') %>%
+   arrange(rider_status, desc(ride_event))
+```
+
+### Exploring the average ride length per month
+
+```{r}
+aggregate(trips_clean$ride_length ~ trips_clean$rider_status + trips_clean$month, FUN = mean)
+```
+### The results show casual riders' average ride length is high in the month of July compared to the month of May for member riders.
+
+
+### Exploring the top 10 origin stations used by riders
+
+```{r}
+trips_clean %>%
+   group_by(rider_status, origin_station) %>%
+   summarise(ride_event = n(), .groups = 'drop') %>%
+   arrange(rider_status, desc(ride_event)) %>%
+   slice(1:11)
+```
+
+### Exploring the top 10 destination stations used by riders
+
+```{r}
+trips_clean %>%
+   group_by(rider_status, destination_station) %>%
+   summarise(ride_event = n(), .groups = 'drop') %>%
+   arrange(rider_status, desc(ride_event)) %>%
+   slice(1:11)
+```
+### There's no significant difference. Casual riders commence and end their rides at the same stations.
+
+
+
+
+
+### SUMMARY of the Analysis.
+
+#### . There are clear differences in ridership habits among members and casual riders. The are also some obvious correlations in seasonal ridership, bike class, and mode day of the week.
+
+#### . After processing, a total of 3,731,696 rides were recorded in the last 12 months, 59% by members and 41% by casual riders.
+
+#### . Member riders tend to ride the most on Wednesdays, Fridays, and Saturdays, while casuals riders ride the most on Fridays, Saturdays, and Sundays.
+
+#### . Ride length for casual riders was more than twice that of members (44 versus 16 minutes, rounded to nearest minute). This could explain that casual riders used bikes for tourism, sightseeing, and kept them much longer while visiting the city. Assumptions are that members used the bikes for work or shopping.
+
+#### . The median ride length is 20.86 minutes for casual users and 11.31 minutes for members, while overall the mean ride length is 27.42 minutes and the median is 14.35.
+
+#### . Docked bikes are the most popular for both members and casual riders.
+
+#### . Saturday is the mode ride day for both members and casual riders, with Sunday leading in ride length for casual riders, and Saturday and Sunday for members.Tuesday is the least in ride length for both users.
+
+#### . Casual riders start and end their trips at the same stations. The top 5 are:
+
+Streeter Dr & Grand Ave
+
+Lake Shore Dr & Monroe.
+
+Millennium Park
+
+Theater on the Lake.
+
+Michigan Ave & Oak St
+
+#### . Members usually start and end their rides at these top 5 stations as well:
+
+Clark St & Elm St
+
+Broadway & Barry Ave
+
+Wells St & Concord Ln
+
+Dearborn St & Erie St.
+
+St. Clair & Erie St.
+
+#### . Seasonally, the months of July, August, and September are the most popular for casual riders, while members ride the most in April, July, August, September, and October. In all, August is the peak month for both casuals and members. January and February are the lowest ride months for both; this is obvious due to the winter weather.
+
+
+
+
+
+
+## Share. This step will involve bringing the data to life through effective visuals and data storytelling. Emphasis is placed on making my work accessible to all.
+
+
+### Loading visualization libraries
+
+```{r}
+library(ggplot2)
+library(dplyr)
+```
+
+
+#### Weekly comparisons
+
+```{r}
+ggplot(data = trips_clean) +
+   geom_bar(mapping = aes(x = day_of_week, fill = rider_status)) +
+   facet_wrap(~rider_status) +
+   scale_fill_manual(values = c("red", "blue"))+
+   theme(axis.text.x = element_text(angle = 35)) +
+   labs(title = "Side-by-Side Comparison of Total Weekly Rides", caption = "Data sourced from Motivate International Inc.")
+```
+
+### The above visualization confirms 'Saturday' as the mode (peak) day for both type of riders.
+
+
+
+#### Combined weekly trips
+
+```{r}
+trips_clean %>%  
+  group_by(rider_status, day_of_week) %>% 
+  summarise(ride_event = n(), .groups = 'drop') %>% 
+  arrange(rider_status, day_of_week)  %>% 
+  ggplot(aes(x = day_of_week, y = ride_event, fill = rider_status)) +
+   scale_fill_manual(values = c("red", "blue"))+
+  labs(title ="Combined Total Trips by Riders per Week", subtitle = "Year: May 2020 - April 2021", caption = "Data sourced from Motivate International Inc.") +
+  geom_col(width=0.5, position = position_dodge(width=0.5)) +
+     scale_y_continuous(labels = function(x) format(x, scientific = FALSE))
+```
+
+
+#### Ride length comparison
+
+```{r}
+ggplot(data = trips_clean, aes(x=rider_status, y=ride_length, color=rider_status))+
+   geom_point()+
+   xlab("rider_status")+
+   ylab("ride_length")+
+      labs(title = "Comparison Ride Length among Riders", subtitle = "From: May 2020 to April 2021", caption = "Data sourced from Motivate International Inc.")
+```
+
+
+
+#### Frequently used bikes
+
+```{r}
+trips_clean %>%
+  group_by(bike_class, rider_status) %>%
+  summarise(ride_event = n(), .groups = 'drop') %>%  
+  ggplot(aes(x= rider_status, y=ride_event, fill= rider_status))+
+              geom_col(position = "dodge") +
+   scale_fill_manual(values = c("red", "blue", "green"))+
+  scale_y_continuous(labels = scales::comma) +
+  facet_wrap(~bike_class)
+  labs(title ="Frequently Used Bikes", subtitle = "From: May 2020 to April 2021", caption = "Data sourced from Motivate International Inc.")
+```
+
+
+#### Monthly visualizations for casual riders
+
+```{r}
+trips_clean %>%
+   group_by(month, rider_status) %>%
+   summarise(ride_event = n(), .groups = 'drop') %>%
+   filter(rider_status == 'casual') %>%
+   ggplot(aes(x=month, y=ride_event, fill = rider_status))+
+   geom_bar(position = 'dodge', stat = 'identity')+
+   scale_fill_manual(values = c("red"))+
+   scale_y_continuous(labels = scales::comma)+
+   theme(axis.text.x = element_text(angle = 35))+
+   labs(title = "Monthly Ridership for Casual Riders", subtitle = "Between May 2020 and April 2021", caption = "Data sourced from Motivate International Inc.")
+```
+### The above graph shows summer months as very popular, with August being the peak for casual riders.
+
+
+### Monthly visualizations for annual members riders
+
+```{r}
+trips_clean %>%
+   group_by(month, rider_status) %>%
+   summarise(ride_event = n(), .groups = 'drop') %>%
+   filter(rider_status == 'member') %>%
+   ggplot(aes(x=month, y=ride_event, fill = rider_status))+
+   geom_bar(position = 'dodge', stat = 'identity')+
+   scale_fill_manual(values = c("blue"))+
+   theme(axis.text.x = element_text(angle = 35))+
+   scale_y_continuous(labels = scales::comma)+
+   labs(title = "Monthly Ridership for Annual Members", subtitle = "Between May 2020 and April 2021", caption = "Data sourced from Motivate International Inc.")
+```
+
+### Summer months are also popular with annual members, and it slows down during the winter.
+
+
+## Act. In this final step, I am making the following 3 recommendations:
+
+### . Since Cyclistic aims to convert casual riders into annual member riders, it is best to focus on advertising that explains the benefits of being annual members. For example, explain the savings associated with annual membership such as discounts and full ride assistance should an unexpected event occur. Moreover, it is best to have a physical advertising presence at casual riders' most popular origin and destination stations as found in this analysis. Seasonally, advertisement campaigns should kick off in the Spring, right before the busy summer months.
+
+### . People respond well to incentives. Casual riders are very active on weekends, and they can be lured by weekend promotions that offer free weekdays' rides upon completion of a set amount of ride hours or minutes between Fridays, Saturdays, and Sundays.
+
+### . More insight on casual riders is warranted. If they are city's residents or locals, then initiatives towards converting them into annual members would be more effective in this scenario because those riders can in addition of advertising learn about the program from friends, co-workers, and family who are members (word of mouth). In this instance, it is best to offer promotions to members who refer a casual rider for annual membership; perhaps a discount on their annual membership. If casual riders are merely tourists or visitors to the city, then programs that encourage longer bike uses are warranted.
+
+#### Creating a file for additional visualization in Tableau or other presentation software.
+
+```{r}
+totals <- aggregate(trips_clean$ride_length ~ trips_clean$rider_status + trips_clean$day_of_week, FUN = mean)
+```
+
+```{r}
+write.csv(totals, file = "C:/users/panca/Downloads/divvy_average_ride_length.csv")
+```
